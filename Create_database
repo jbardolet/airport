@@ -1,0 +1,216 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema airport
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema airport
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `airport` DEFAULT CHARACTER SET utf8 ;
+USE `airport` ;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Cities`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Cities` (
+  `idCity` INT NOT NULL AUTO_INCREMENT,
+  `City_Name` VARCHAR(45) NULL,
+  `Country` VARCHAR(45) NULL,
+  PRIMARY KEY (`idCity`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `airport`.`People`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`People` (
+  `passport` INT NOT NULL,
+  `firstName` VARCHAR(45) NOT NULL,
+  `lastName` VARCHAR(45) NOT NULL,
+  `date_birth` DATE NOT NULL,
+  `id_city` INT NULL,
+  PRIMARY KEY (`passport`),
+  CONSTRAINT `City_id`
+    FOREIGN KEY (`id_city`)
+    REFERENCES `airport`.`Cities` (`idCity`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `airport`.`Workers_information`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Workers_information` (
+  `id_worker` INT NOT NULL,
+  `start_day` DATE NULL,
+  PRIMARY KEY (`id_worker`),
+  CONSTRAINT `id_People`
+    FOREIGN KEY (`id_worker`)
+    REFERENCES `airport`.`People` (`passport`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Airlines`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Airlines` (
+  `idAirlines` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idAirlines`))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Airplanes`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Airplanes` (
+  `idAirplane` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `id_Airline` INT NULL,
+  PRIMARY KEY (`idAirplane`),
+  CONSTRAINT `id_Airlines`
+    FOREIGN KEY (`id_Airline`)
+    REFERENCES `airport`.`Airlines` (`idAirlines`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Seats`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Seats` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `seatNumber` INT NOT NULL,
+  `seatLetter` VARCHAR(45) NOT NULL,
+  `Id_airplanne` INT NULL,
+  `price` DECIMAL(10) NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `Ariplane_id`
+    FOREIGN KEY (`Id_airplanne`)
+    REFERENCES `airport`.`Airplanes` (`idAirplane`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Pilot_license`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Pilot_license` (
+  `idPilot` INT NOT NULL,
+  `pilot_license` VARCHAR(45) NULL,
+  PRIMARY KEY (`idPilot`),
+  CONSTRAINT `id_worker`
+    FOREIGN KEY (`idPilot`)
+    REFERENCES `airport`.`Workers_information` (`id_worker`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Passengers`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Passengers` (
+  `Passport` INT NOT NULL,
+  PRIMARY KEY (`Passport`),
+  CONSTRAINT `passport`
+    FOREIGN KEY (`Passport`)
+    REFERENCES `airport`.`People` (`passport`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+-- Table `airport`.`Trips`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Trips` (
+  `idTrip` INT NOT NULL AUTO_INCREMENT,
+  `id_Airplane` INT NULL,
+  `id_from` INT NULL,
+  `id_to` INT NULL,
+  `time_departure` DATETIME NULL,
+  PRIMARY KEY (`idTrip`),
+  CONSTRAINT `id_city_from`
+    FOREIGN KEY (`id_from`)
+    REFERENCES `airport`.`Cities` (`idCity`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `id_city_to`
+    FOREIGN KEY (`id_to`)
+    REFERENCES `airport`.`Cities` (`idCity`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `id_airplane`
+    FOREIGN KEY (`id_Airplane`)
+    REFERENCES `airport`.`Airplanes` (`idAirplane`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Luggage`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Luggage` (
+  `idLuggage` INT NOT NULL,
+  `price` DECIMAL NULL,
+  `description` VARCHAR(45) NULL,
+  PRIMARY KEY (`idLuggage`))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `airport`.`Tickets`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Tickets` (
+  `ticketId` INT NOT NULL AUTO_INCREMENT,
+  `id_passenger` INT NULL,
+  `id_trip` INT NULL,
+  `id_seat` INT NULL,
+  `id_luggage` INT NULL,
+  PRIMARY KEY (`ticketId`),
+  CONSTRAINT `id_passenger`
+    FOREIGN KEY (`id_passenger`)
+    REFERENCES `airport`.`Passengers` (`Passport`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `id_trip`
+    FOREIGN KEY (`id_trip`)
+    REFERENCES `airport`.`Trips` (`idTrip`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `id_seat`
+    FOREIGN KEY (`id_seat`)
+    REFERENCES `airport`.`Seats` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `id_luggage`
+    FOREIGN KEY (`id_luggage`)
+    REFERENCES `airport`.`Luggage` (`idLuggage`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `airport`.`Crew_Services`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `airport`.`Crew_Services` (
+  `id_TripService` INT NOT NULL AUTO_INCREMENT,
+  `id_trip` INT NULL,
+  `id_worker` INT NULL,
+  PRIMARY KEY (`id_TripService`),
+  CONSTRAINT `c_id_worker`
+    FOREIGN KEY (`id_worker`)
+    REFERENCES `airport`.`Workers_information` (`id_worker`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `c_id_trip`
+    FOREIGN KEY (`id_trip`)
+    REFERENCES `airport`.`Trips` (`idTrip`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
