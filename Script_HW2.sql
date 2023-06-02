@@ -82,9 +82,12 @@ SELECT * FROM seats RIGHT JOIN airplanes ON seats.Id_airplanne= airplanes.id;
 /**AGGREGATE FUNCTIONS WITHOUT HAVING**/
 SELECT MIN(price) AS SmallestPrice FROM luggage;
 SELECT COUNT(id) FROM seats group by Id_airplanne;
-
+SELECT MAX(price) AS MaxPrice FROM seats;
+SELECT AVG(price) FROM seats;
+SELECT SUM(seats.price+luggage.price) FROM seats JOIN tickets ON tickets.id_seats = seats.id JOIN luggage ON tickets.id_luggage = luggage.id WHERE tickets.id = 2;
 
 
 /**AGGREGATE FUNCTIONS WITH HAVING**/
 SELECT COUNT(id), Id_airplanne FROM seats group by Id_airplanne HAVING COUNT(id) > 1 ;
-
+SELECT SUM(seats.price+luggage.price) FROM seats JOIN tickets ON tickets.id_seats = seats.id JOIN luggage ON tickets.id_luggage = luggage.id group by tickets.id HAVING tickets.id =2;
+SELECT AVG(price) FROM seats group by id HAVING (id) > 1;
