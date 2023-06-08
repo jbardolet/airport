@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cities>
+    <city>
+        <id>1</id>
+        <name>Wooster</name>
+        <state>Ohio</state>
+        <country>US</country>
+    </city>
+    <city>
+        <id>2</id>
+        <name>Terrassa</name>
+        <state>Catalunya</state>
+        <country>ES</country>
+    </city>
+</cities>
