@@ -1,17 +1,19 @@
 package com.solvd.hospital.db.dao.model;
 
-public class Food {
+import java.util.List;
+
+public class Airline {
     private Long id;
     private String name;
-    private String description;
+    private List<Airplane> airplaneList;
 
-    public Food() {
+    public Airline() {
     }
 
-    public Food(Long id, String name, String description) {
+    public Airline(Long id, String name, List<Airplane> airplaneList) {
         this.id = id;
         this.name = name;
-        this.description = description;
+        this.airplaneList = airplaneList;
     }
 
     public Long getId() {
@@ -30,11 +32,11 @@ public class Food {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public List<Airplane> getAirplaneList() {
+        return airplaneList;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setAirplaneList(List<Airplane> airplaneList) {
+        this.airplaneList = airplaneList;
     }
 }

@@ -1,7 +1,7 @@
 package com.solvd.hospital.db.dao.model;
 
 public class Seat {
-    private Integer id;
+    private Long id;
     private Integer seatNumber;
     private Integer seatLetter;
     private Float price;
@@ -9,18 +9,18 @@ public class Seat {
     public Seat() {
     }
 
-    public Seat(Integer id, Integer seatNumber, Integer seatLetter, Float price) {
+    public Seat(Long id, Integer seatNumber, Integer seatLetter, Float price) {
         this.id = id;
         this.seatNumber = seatNumber;
         this.seatLetter = seatLetter;
         this.price = price;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

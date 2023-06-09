@@ -1,5 +1,5 @@
 use airport;
-/**DROP DATABASE airport;**/
+/*DROP DATABASE airport;*/
 
 /**DROP TABLE cities;**/
 

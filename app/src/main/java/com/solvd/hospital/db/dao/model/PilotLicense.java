@@ -1,10 +1,10 @@
 package com.solvd.hospital.db.dao.model;
 
 public class PilotLicense {
-    private Integer id;
+    private Long id;
     private String licenseCode;
 
-    public PilotLicense(Integer id, String licenseCode) {
+    public PilotLicense(Long id, String licenseCode) {
         this.id = id;
         this.licenseCode = licenseCode;
     }
@@ -12,11 +12,11 @@ public class PilotLicense {
     public PilotLicense() {
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

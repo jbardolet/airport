@@ -1,4 +1,4 @@
-package com.solvd.hospital.db.mysql;
+package com.solvd.hospital.db.utils.mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

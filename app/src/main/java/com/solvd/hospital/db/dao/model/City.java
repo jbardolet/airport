@@ -9,10 +9,11 @@ public class City {
     public City() {
     }
 
-    public City(Long id, String name, String country) {
+    public City(Long id, String name, String country, String state) {
         this.id = id;
         this.name = name;
         this.country = country;
+        this.state =state;
     }
 
     public Long getId() {

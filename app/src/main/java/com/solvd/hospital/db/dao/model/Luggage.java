@@ -1,24 +1,24 @@
 package com.solvd.hospital.db.dao.model;
 
 public class Luggage {
-    private Integer id;
+    private Long id;
     private Float price;
     private String description;
 
     public Luggage() {
     }
 
-    public Luggage(Integer id, Float price, String description) {
+    public Luggage(Long id, Float price, String description) {
         this.id = id;
         this.price = price;
         this.description = description;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
