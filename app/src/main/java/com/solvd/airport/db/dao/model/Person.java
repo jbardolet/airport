@@ -7,7 +7,7 @@ public class Person {
     private String name;
     private String lastName;
     private Date dataBirth;
-    private Integer workerId;
+    private Long workerId;
     private Date startDate;
     private City city;
     private PilotLicense pilotLicense;
@@ -15,7 +15,7 @@ public class Person {
     public Person() {
     }
 
-    public Person(Long id, String name, String lastName, Date dataBirth, Integer workerId, Date startDate, City city, PilotLicense pilotLicense) {
+    public Person(Long id, String name, String lastName, Date dataBirth, Long workerId, Date startDate, City city, PilotLicense pilotLicense) {
         this.id = id;
         this.name = name;
         this.lastName = lastName;
@@ -58,11 +58,11 @@ public class Person {
         this.dataBirth = dataBirth;
     }
 
-    public Integer getWorkerId() {
+    public Long getWorkerId() {
         return workerId;
     }
 
-    public void setWorkerId(Integer workerId) {
+    public void setWorkerId(Long workerId) {
         this.workerId = workerId;
     }
 

@@ -15,4 +15,5 @@ public interface IDAO <T>{
     //UPDATE
 
     //DELETE
+    void deletePersonById(Long id) throws SQLException, InterruptedException;
 }

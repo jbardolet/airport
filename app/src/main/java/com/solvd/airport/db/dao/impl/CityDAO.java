@@ -17,14 +17,25 @@ public class CityDAO implements ICityDAO {
     private static final Logger logger = LogManager.getLogger("CityDAO");
 
     private static final String INSERT = "INSERT INTO cities (id, City_Name, Country, State) VALUES (?,?, ?, ?)";
-    private static final String SELECT_BY_STATE = "";
-    private static final String SELECT_BY_ID = "";
+    private static final String SELECT_BY_STATE = "SELECT * FROM cities WHERE State = ?";
+    private static final String SELECT_BY_ID = "SELECT * FROM cities WHERE id = ?";
     private static final String SELECT_ALL = "SELECT * FROM cities";
     private static final String DELETE = "DELETE FROM cities WHERE id = ?";
 
     @Override
-    public City selectByState(String state) {
-        return null;
+    public List<City> selectByState(String state) throws SQLException, InterruptedException {
+        List<City> cityList = new ArrayList<>();
+        Connection connection = ConnectionPoolImpl.getInstance().getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID);
+        preparedStatement.setString(1, state);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()){
+            City city= fillCityByResultSet(resultSet);
+            cityList.add(city);
+        }
+        ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        return cityList;
+
     }
 
     @Override
@@ -42,8 +53,14 @@ public class CityDAO implements ICityDAO {
     }
 
     @Override
-    public City getById(Integer id) {
-        return null;
+    public City getById(Integer id) throws SQLException, InterruptedException {
+        Connection connection = ConnectionPoolImpl.getInstance().getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID);
+        preparedStatement.setInt(1, Math.toIntExact(id));
+        ResultSet resultSet = preparedStatement.executeQuery();
+        City city = fillCityByResultSet(resultSet);
+        ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        return city;
     }
 
     @Override
@@ -53,11 +70,7 @@ public class CityDAO implements ICityDAO {
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL);
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()){
-            City city= new City();
-            city.setId(resultSet.getLong(1));
-            city.setName(resultSet.getNString(2));
-            city.setCountry(resultSet.getString(3));
-            city.setState(resultSet.getString(4));
+            City city= fillCityByResultSet(resultSet);
             cityList.add(city);
         }
         ConnectionPoolImpl.getInstance().releaseConnection(connection);
@@ -65,7 +78,8 @@ public class CityDAO implements ICityDAO {
         return cityList;
     }
 
-    public void deleteByID(Long id) throws SQLException, InterruptedException {
+    @Override
+    public void deletePersonById(Long id) throws SQLException, InterruptedException {
         Connection connection = ConnectionPoolImpl.getInstance().getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(DELETE);
         preparedStatement.setInt(1, Math.toIntExact(id));
@@ -73,6 +87,16 @@ public class CityDAO implements ICityDAO {
         logger.info("Record deleted");
         ConnectionPoolImpl.getInstance().releaseConnection(connection);
     }
+    private City fillCityByResultSet(ResultSet resultSet) throws SQLException {
+        City city= new City();
+        city.setId(resultSet.getLong(1));
+        city.setName(resultSet.getNString(2));
+        city.setCountry(resultSet.getString(3));
+        city.setState(resultSet.getString(4));
+
+        return city;
+    }
+
 
 
 }

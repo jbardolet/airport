@@ -12,16 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AirlineDAO implements IDAO<Airline> {
-    @Override
-    public void insert(Airline airline) throws SQLException, InterruptedException {
 
-    }
 
     @Override
-    public Airline getById(Integer id) {
-        return null;
-    }
-
     public List<Airline> getAll() throws SQLException, InterruptedException {
         List<Airline> airlines = new ArrayList<>();
         Connection connection = ConnectionPoolImpl.getInstance().getConnection();
@@ -36,5 +29,20 @@ public class AirlineDAO implements IDAO<Airline> {
         ConnectionPoolImpl.getInstance().releaseConnection(connection);
 
         return airlines;
+    }
+
+    @Override
+    public void deletePersonById(Long id) throws SQLException, InterruptedException {
+
+    }
+
+    @Override
+    public void insert(Airline airline) throws SQLException, InterruptedException {
+
+    }
+
+    @Override
+    public Airline getById(Integer id) {
+        return null;
     }
 }

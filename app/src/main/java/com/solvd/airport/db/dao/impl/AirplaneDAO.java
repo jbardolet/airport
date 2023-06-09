@@ -13,10 +13,7 @@ import java.util.List;
 
 public class AirplaneDAO implements IDAO<Airplane> {
 
-    @Override
-    public void insert(Airplane airplane) throws SQLException, InterruptedException {
 
-    }
 
     @Override
     public Airplane getById(Integer id) throws SQLException, InterruptedException {
@@ -45,5 +42,15 @@ public class AirplaneDAO implements IDAO<Airplane> {
         ConnectionPoolImpl.getInstance().releaseConnection(connection);
 
         return airplanes;
+    }
+
+    @Override
+    public void insert(Airplane airplane) throws SQLException, InterruptedException {
+
+    }
+
+    @Override
+    public void deletePersonById(Long id) throws SQLException, InterruptedException {
+
     }
 }

@@ -43,7 +43,7 @@ public class App {
         logger.info(cities);
 
         logger.info("DELETE by ID");
-        cityDAO.deleteByID(2L);
+        cityDAO.deletePersonById(2L);
         logger.info(cityDAO.getAll());
 
         logger.info("Service Airline, list planes");
