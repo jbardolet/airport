@@ -2,8 +2,9 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
-import com.solvd.airport.db.dao.model.Airline;
-import com.solvd.airport.db.dao.model.Role;
+import com.solvd.airport.db.dao.model.Seat;
+import com.solvd.airport.db.dao.model.Ticket;
+import com.solvd.airport.db.service.impl.TicketsUtilsImpl;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,25 +16,32 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirlineDAO implements IDAO<Airline> {
-    private static final Logger logger = LogManager.getLogger("AirlineDAO");
-    private static final String SELECT_ALL = "SELECT * FROM airlines";
-    private static final String INSERT = "INSERT INTO airlines (id, name) VALUES (?,?)";
-    private static final String SELECT_BY_ID = "SELECT * FROM airlines WHERE id = ?";
+public class TicketDAO implements IDAO<Ticket> {
 
-    private static final String DELETE = "DELETE FROM airlines WHERE id = ?";
+    private static final Logger logger = LogManager.getLogger("TicketDAO");
+    private static final String INSERT = "INSERT INTO Tickets (id, id_passenger, id_trip, id_luggage, id_seats, Food_id) VALUES (?,?, ?,?,?,?)";
+    private static final String SELECT_BY_ID = "SELECT * FROM Tickets WHERE id = ?";
+
+    private static final String SELECT_ALL = "SELECT * FROM Tickets";
+    private static final String DELETE = "DELETE FROM Tickets WHERE id = ?";
+    private TicketsUtilsImpl ticketsUtils = new TicketsUtilsImpl();
 
     @Override
-    public void insert(Airline airline) throws DataConectionExeption {
+    public void insert(Ticket ticket) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(INSERT);
-            statement.setLong(1,airline.getId());
-            statement.setString(2, airline.getName());
+            statement.setLong(1,ticket.getId());
+            statement.setLong(2, ticket.getPerson().getId());
+            statement.setLong(3, ticket.getTrip().getId());
+            statement.setLong(4,ticket.getLuggage().getId());
+            statement.setLong(5,ticket.getSeat().getId());
+            statement.setLong(6,ticket.getFood().getId());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -42,73 +50,80 @@ public class AirlineDAO implements IDAO<Airline> {
     }
 
     @Override
-    public Airline getById(Long id) throws DataConectionExeption {
+    public Ticket getById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement statement;
-        Airline airline;
+        PreparedStatement statement = null;
+        Ticket ticket = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
-            airline = fillAirlineByResultSet(resultSet);
-
+            ticket = fillTicketByResultSet(resultSet);
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airline;
+        return ticket;
     }
 
     @Override
-    public List<Airline> getAll() throws DataConectionExeption {
-        List<Airline> airlines = new ArrayList<>();
+    public List<Ticket> getAll() throws DataConectionExeption {
+        List<Ticket> tickets = new ArrayList<>();
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
-                airlines.add(fillAirlineByResultSet(resultSet));
+                tickets.add(fillTicketByResultSet(resultSet));
             }
-        } catch (SQLException | InterruptedException e) {
-            throw new DataConectionExeption("Error query: "+SELECT_ALL);
+            resultSet.close();
+            preparedStatement.close();
+        } catch (SQLException |InterruptedException e) {
+            throw new DataConectionExeption("Error query: " + SELECT_ALL);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airlines;
+
+        return tickets;
     }
 
     @Override
     public void deleteById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(DELETE);
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
-
-    private Airline fillAirlineByResultSet(ResultSet resultSet) throws DataConectionExeption {
-        Airline airline= null;
+    private Ticket fillTicketByResultSet(ResultSet resultSet) throws DataConectionExeption {
+        Ticket ticket= null;
         try {
-            airline= new Airline();
-            airline.setId(resultSet.getLong(1));
-            airline.setName(resultSet.getString(2));
+            ticket= new Ticket();
+            ticket.setId(resultSet.getLong(1));
+            ticket.setPerson(ticketsUtils.selectPersonById(resultSet.getLong(2)));
+            ticket.setTrip(ticketsUtils.selectTripById(resultSet.getLong(3)));
+            ticket.setLuggage(ticketsUtils.selectLuggageById(resultSet.getLong(4)));
+            ticket.setSeat(ticketsUtils.selectSeatById(resultSet.getLong(5)));
+            ticket.setFood(ticketsUtils.selectFoodById(resultSet.getLong(6)));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataConectionExeption("Error filling role object");
         }
-        return airline;
-    }
 
+        return ticket;
+    }
 }

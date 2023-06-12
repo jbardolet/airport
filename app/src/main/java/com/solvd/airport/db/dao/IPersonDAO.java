@@ -7,5 +7,5 @@ import java.sql.SQLException;
 public interface IPersonDAO extends IDAO<Person> {
 
 
-    void deletePersonByObject(Person p) throws SQLException, InterruptedException;
+    void deletePersonByObject(Person p) throws SQLException, InterruptedException, DataConectionExeption;
 }

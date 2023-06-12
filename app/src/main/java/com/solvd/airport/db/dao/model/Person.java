@@ -11,11 +11,12 @@ public class Person {
     private Date startDate;
     private City city;
     private PilotLicense pilotLicense;
+    private Role role;
 
     public Person() {
     }
 
-    public Person(Long id, String name, String lastName, Date dataBirth, Long workerId, Date startDate, City city, PilotLicense pilotLicense) {
+    public Person(Long id, String name, String lastName, Date dataBirth, Long workerId, Date startDate, City city, PilotLicense pilotLicense, Role role) {
         this.id = id;
         this.name = name;
         this.lastName = lastName;
@@ -24,6 +25,7 @@ public class Person {
         this.startDate = startDate;
         this.city = city;
         this.pilotLicense = pilotLicense;
+        this.role = role;
     }
 
     public Long getId() {
@@ -88,5 +90,13 @@ public class Person {
 
     public void setPilotLicense(PilotLicense pilotLicense) {
         this.pilotLicense = pilotLicense;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

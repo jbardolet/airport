@@ -3,17 +3,20 @@ package com.solvd.airport.db.dao.model;
 public class Seat {
     private Long id;
     private Integer seatNumber;
-    private Integer seatLetter;
+    private String seatLetter;
     private Float price;
+    private Airplane airplane;
+
 
     public Seat() {
     }
 
-    public Seat(Long id, Integer seatNumber, Integer seatLetter, Float price) {
+    public Seat(Long id, Integer seatNumber, String seatLetter, Float price, Airplane airplane) {
         this.id = id;
         this.seatNumber = seatNumber;
         this.seatLetter = seatLetter;
         this.price = price;
+        this.airplane = airplane;
     }
 
     public Long getId() {
@@ -32,11 +35,11 @@ public class Seat {
         this.seatNumber = seatNumber;
     }
 
-    public Integer getSeatLetter() {
+    public String getSeatLetter() {
         return seatLetter;
     }
 
-    public void setSeatLetter(Integer seatLetter) {
+    public void setSeatLetter(String seatLetter) {
         this.seatLetter = seatLetter;
     }
 
@@ -46,5 +49,13 @@ public class Seat {
 
     public void setPrice(Float price) {
         this.price = price;
+    }
+
+    public Airplane getAirplane() {
+        return airplane;
+    }
+
+    public void setAirplane(Airplane airplane) {
+        this.airplane = airplane;
     }
 }

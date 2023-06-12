@@ -2,7 +2,7 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
-import com.solvd.airport.db.dao.model.Airline;
+import com.solvd.airport.db.dao.model.Food;
 import com.solvd.airport.db.dao.model.Role;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
@@ -15,23 +15,25 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirlineDAO implements IDAO<Airline> {
-    private static final Logger logger = LogManager.getLogger("AirlineDAO");
-    private static final String SELECT_ALL = "SELECT * FROM airlines";
-    private static final String INSERT = "INSERT INTO airlines (id, name) VALUES (?,?)";
-    private static final String SELECT_BY_ID = "SELECT * FROM airlines WHERE id = ?";
+public class FoodDAO implements IDAO<Food> {
 
-    private static final String DELETE = "DELETE FROM airlines WHERE id = ?";
+    private static final Logger logger = LogManager.getLogger("FoodDAO");
+    private static final String INSERT = "INSERT INTO food (id, name, description) VALUES (?,?, ?)";
+    private static final String SELECT_BY_ID = "SELECT * FROM food WHERE id = ?";
+
+    private static final String SELECT_ALL = "SELECT * FROM food";
+    private static final String DELETE = "DELETE FROM food WHERE id = ?";
 
     @Override
-    public void insert(Airline airline) throws DataConectionExeption {
+    public void insert(Food food) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(INSERT);
-            statement.setLong(1,airline.getId());
-            statement.setString(2, airline.getName());
+            statement.setLong(1,food.getId());
+            statement.setString(2, food.getName());
+            statement.setString(3, food.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
         } catch (SQLException | InterruptedException e)  {
@@ -39,53 +41,56 @@ public class AirlineDAO implements IDAO<Airline> {
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
+
     }
 
     @Override
-    public Airline getById(Long id) throws DataConectionExeption {
+    public Food getById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement statement;
-        Airline airline;
+        PreparedStatement statement = null;
+        Food food = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
-            airline = fillAirlineByResultSet(resultSet);
+            food = fillFoodByResultSet(resultSet);
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airline;
+        return food;
     }
 
     @Override
-    public List<Airline> getAll() throws DataConectionExeption {
-        List<Airline> airlines = new ArrayList<>();
+    public List<Food> getAll() throws DataConectionExeption {
+        List<Food> foods = new ArrayList<>();
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement statement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
-            preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            statement = connection.prepareStatement(SELECT_ALL);
+            statement.executeUpdate();
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()){
-                airlines.add(fillAirlineByResultSet(resultSet));
+                foods.add(fillFoodByResultSet(resultSet));
             }
-        } catch (SQLException | InterruptedException e) {
-            throw new DataConectionExeption("Error query: "+SELECT_ALL);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airlines;
+        return foods;
     }
 
     @Override
     public void deleteById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(DELETE);
@@ -99,16 +104,17 @@ public class AirlineDAO implements IDAO<Airline> {
         }
     }
 
-    private Airline fillAirlineByResultSet(ResultSet resultSet) throws DataConectionExeption {
-        Airline airline= null;
+    private Food fillFoodByResultSet(ResultSet resultSet) throws DataConectionExeption {
+        Food food= null;
         try {
-            airline= new Airline();
-            airline.setId(resultSet.getLong(1));
-            airline.setName(resultSet.getString(2));
+            food= new Food();
+            food.setId(resultSet.getLong(1));
+            food.setName(resultSet.getString(2));
+            food.setDescription(resultSet.getString(3));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataConectionExeption("Error filling food object");
         }
-        return airline;
-    }
 
+        return food;
+    }
 }

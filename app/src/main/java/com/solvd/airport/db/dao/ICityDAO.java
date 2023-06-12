@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ICityDAO extends IDAO<City> {
 
-    List<City> selectByState(String state) throws SQLException, InterruptedException;
+    List<City> selectByState(String state) throws SQLException, InterruptedException, DataConectionExeption;
 }

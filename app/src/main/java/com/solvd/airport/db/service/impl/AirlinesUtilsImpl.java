@@ -1,5 +1,6 @@
 package com.solvd.airport.db.service.impl;
 
+import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.impl.AirlineDAO;
 import com.solvd.airport.db.dao.model.Airplane;
 import com.solvd.airport.db.service.IAirlines;
@@ -12,12 +13,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirlinesUtils implements IAirlines {
+public class AirlinesUtilsImpl implements IAirlines {
 
     AirlineDAO airlineDAO = new AirlineDAO();
 
 
-    public List<Airplane> selelctByFirstAirline() throws SQLException, InterruptedException {
+
+
+    public List<Airplane> selelctByFirstAirline() throws SQLException, InterruptedException, DataConectionExeption {
         List<Airplane> airplanes = new ArrayList<>();
         Connection connection = ConnectionPoolImpl.getInstance().getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM airplanes WHERE id_Airline = ?");

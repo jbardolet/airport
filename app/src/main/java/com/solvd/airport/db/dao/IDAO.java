@@ -1,19 +1,16 @@
 package com.solvd.airport.db.dao;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public interface IDAO <T>{
 
     //INSERT
-    void insert (T t) throws SQLException, InterruptedException;
+    void insert (T t) throws DataConectionExeption;
 
     //SELECT
-    T getById(Integer id) throws SQLException, InterruptedException;
-    List<T> getAll() throws SQLException, InterruptedException;
-
-    //UPDATE
+    T getById(Long id) throws  DataConectionExeption;
+    List<T> getAll() throws DataConectionExeption;
 
     //DELETE
-    void deletePersonById(Long id) throws SQLException, InterruptedException;
+    void deleteById(Long id) throws DataConectionExeption;
 }

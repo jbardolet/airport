@@ -2,8 +2,8 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
-import com.solvd.airport.db.dao.model.Airline;
-import com.solvd.airport.db.dao.model.Role;
+import com.solvd.airport.db.dao.model.Food;
+import com.solvd.airport.db.dao.model.Luggage;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,23 +15,25 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirlineDAO implements IDAO<Airline> {
-    private static final Logger logger = LogManager.getLogger("AirlineDAO");
-    private static final String SELECT_ALL = "SELECT * FROM airlines";
-    private static final String INSERT = "INSERT INTO airlines (id, name) VALUES (?,?)";
-    private static final String SELECT_BY_ID = "SELECT * FROM airlines WHERE id = ?";
+public class LuggageDAO implements IDAO<Luggage> {
 
-    private static final String DELETE = "DELETE FROM airlines WHERE id = ?";
+    private static final Logger logger = LogManager.getLogger("LuggageDAO");
+    private static final String INSERT = "INSERT INTO luggage (id, price, description) VALUES (?,?, ?)";
+    private static final String SELECT_BY_ID = "SELECT * FROM roles WHERE id = ?";
+
+    private static final String SELECT_ALL = "SELECT * FROM roles";
+    private static final String DELETE = "DELETE FROM roles WHERE id = ?";
 
     @Override
-    public void insert(Airline airline) throws DataConectionExeption {
+    public void insert(Luggage luggage) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(INSERT);
-            statement.setLong(1,airline.getId());
-            statement.setString(2, airline.getName());
+            statement.setLong(1,luggage.getId());
+            statement.setFloat(2, luggage.getPrice());
+            statement.setString(3, luggage.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
         } catch (SQLException | InterruptedException e)  {
@@ -42,50 +44,52 @@ public class AirlineDAO implements IDAO<Airline> {
     }
 
     @Override
-    public Airline getById(Long id) throws DataConectionExeption {
+    public Luggage getById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement statement;
-        Airline airline;
+        PreparedStatement statement = null;
+        Luggage luggage = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
-            airline = fillAirlineByResultSet(resultSet);
+            luggage = fillLuggageByResultSet(resultSet);
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airline;
+        return luggage;
     }
 
     @Override
-    public List<Airline> getAll() throws DataConectionExeption {
-        List<Airline> airlines = new ArrayList<>();
+    public List<Luggage> getAll() throws DataConectionExeption {
+        List<Luggage> luggageList = new ArrayList<>();
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement statement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
-            preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            statement = connection.prepareStatement(SELECT_ALL);
+            statement.executeUpdate();
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()){
-                airlines.add(fillAirlineByResultSet(resultSet));
+                luggageList.add(fillLuggageByResultSet(resultSet));
             }
-        } catch (SQLException | InterruptedException e) {
-            throw new DataConectionExeption("Error query: "+SELECT_ALL);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airlines;
+        return luggageList;
     }
 
     @Override
     public void deleteById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(DELETE);
@@ -99,16 +103,17 @@ public class AirlineDAO implements IDAO<Airline> {
         }
     }
 
-    private Airline fillAirlineByResultSet(ResultSet resultSet) throws DataConectionExeption {
-        Airline airline= null;
+    private Luggage fillLuggageByResultSet(ResultSet resultSet) throws DataConectionExeption {
+        Luggage luggage= null;
         try {
-            airline= new Airline();
-            airline.setId(resultSet.getLong(1));
-            airline.setName(resultSet.getString(2));
+            luggage= new Luggage();
+            luggage.setId(resultSet.getLong(1));
+            luggage.setPrice(resultSet.getFloat(2));
+            luggage.setDescription(resultSet.getString(3));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataConectionExeption("Error filling luggage object");
         }
-        return airline;
-    }
 
+        return luggage;
+    }
 }

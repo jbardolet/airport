@@ -9,15 +9,17 @@ public class Airplane {
     private List<Seat> seats;
 
     private Gate gate;
+    private Airline airline;
 
     public Airplane() {
     }
 
-    public Airplane(Long id, String name, List<Seat> seats, Gate gate) {
+    public Airplane(Long id, String name, List<Seat> seats, Gate gate, Airline airline) {
         this.id = id;
         this.name = name;
         this.seats = seats;
         this.gate = gate;
+        this.airline = airline;
     }
 
     public Long getId() {
@@ -44,6 +46,22 @@ public class Airplane {
         this.seats = seats;
     }
 
+    public Gate getGate() {
+        return gate;
+    }
+
+    public void setGate(Gate gate) {
+        this.gate = gate;
+    }
+
+    public Airline getAirline() {
+        return airline;
+    }
+
+    public void setAirline(Airline airline) {
+        this.airline = airline;
+    }
+
     @Override
     public String toString() {
         return "Airplane{" +
@@ -51,6 +69,7 @@ public class Airplane {
                 ", name='" + name + '\'' +
                 ", seats=" + seats +
                 ", gate=" + gate +
+                ", airline=" + airline +
                 '}';
     }
 }

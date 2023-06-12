@@ -2,7 +2,7 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
-import com.solvd.airport.db.dao.model.Airline;
+import com.solvd.airport.db.dao.model.PilotLicense;
 import com.solvd.airport.db.dao.model.Role;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
@@ -15,23 +15,22 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirlineDAO implements IDAO<Airline> {
-    private static final Logger logger = LogManager.getLogger("AirlineDAO");
-    private static final String SELECT_ALL = "SELECT * FROM airlines";
-    private static final String INSERT = "INSERT INTO airlines (id, name) VALUES (?,?)";
-    private static final String SELECT_BY_ID = "SELECT * FROM airlines WHERE id = ?";
+public class PilotLicenseDAO implements IDAO<PilotLicense> {
+    private static final Logger logger = LogManager.getLogger("PilotLicenseDAO");
 
-    private static final String DELETE = "DELETE FROM airlines WHERE id = ?";
-
+    private static final String INSERT = "INSERT INTO Pilot_license (id, pilot_license) VALUES (?,?)";
+    private static final String SELECT_BY_ID = "SELECT * FROM Pilot_license WHERE id = ?";
+    private static final String SELECT_ALL = "SELECT * FROM Pilot_license";
+    private static final String DELETE = "DELETE FROM Pilot_license WHERE id = ?";
     @Override
-    public void insert(Airline airline) throws DataConectionExeption {
+    public void insert(PilotLicense pilotLicense) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(INSERT);
-            statement.setLong(1,airline.getId());
-            statement.setString(2, airline.getName());
+            statement.setLong(1,pilotLicense.getId());
+            statement.setString(2, pilotLicense.getLicenseCode());
             statement.executeUpdate();
             logger.info("Record created");
         } catch (SQLException | InterruptedException e)  {
@@ -42,44 +41,47 @@ public class AirlineDAO implements IDAO<Airline> {
     }
 
     @Override
-    public Airline getById(Long id) throws DataConectionExeption {
+    public PilotLicense getById(Long id) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement statement;
-        Airline airline;
+        PilotLicense pilotLicense ;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
-            airline = fillAirlineByResultSet(resultSet);
+            pilotLicense = fillRoleByResultSet(resultSet);
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airline;
+        return pilotLicense;
     }
 
     @Override
-    public List<Airline> getAll() throws DataConectionExeption {
-        List<Airline> airlines = new ArrayList<>();
+    public List<PilotLicense> getAll() throws DataConectionExeption {
+        List<PilotLicense> pilotLicenses = new ArrayList<>();
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement statement;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
-            preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            statement = connection.prepareStatement(SELECT_ALL);
+            statement.executeUpdate();
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()){
-                airlines.add(fillAirlineByResultSet(resultSet));
+                PilotLicense pilotLicense = fillRoleByResultSet(resultSet);
+                pilotLicenses.add(pilotLicense);
             }
-        } catch (SQLException | InterruptedException e) {
-            throw new DataConectionExeption("Error query: "+SELECT_ALL);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
-        return airlines;
+        return pilotLicenses;
     }
 
     @Override
@@ -97,18 +99,19 @@ public class AirlineDAO implements IDAO<Airline> {
         } finally {
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
+
     }
 
-    private Airline fillAirlineByResultSet(ResultSet resultSet) throws DataConectionExeption {
-        Airline airline= null;
+    private PilotLicense fillRoleByResultSet(ResultSet resultSet) throws DataConectionExeption {
+        PilotLicense pilotLicense= null;
         try {
-            airline= new Airline();
-            airline.setId(resultSet.getLong(1));
-            airline.setName(resultSet.getString(2));
+            pilotLicense= new PilotLicense();
+            pilotLicense.setId(resultSet.getLong(1));
+            pilotLicense.setLicenseCode(resultSet.getString(2));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataConectionExeption("Error filling pilotLicense object");
         }
-        return airline;
-    }
 
+        return pilotLicense;
+    }
 }
