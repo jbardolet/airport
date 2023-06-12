@@ -11,8 +11,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class ValidateCIty {
-    private static final String FILENAME = System.getProperty("user.dir") + File.separator + "src"+File.separator+ "main"+File.separator+ "java"+File.separator+ "com"+File.separator+ "solvd"+File.separator+ "hospital"+File.separator+ "parserXML"+File.separator+"city.xml";
-    private static final String VALIDATORNAME = System.getProperty("user.dir") + File.separator + "src"+File.separator+ "main"+File.separator+ "java"+File.separator+ "com"+File.separator+ "solvd"+File.separator+ "hospital"+File.separator+ "parserXML"+File.separator+"XSDcity.xml";
+    private static final String FILENAME = System.getProperty("user.dir") + File.separator + "src"+File.separator+ "main"+File.separator+ "resources"+File.separator+"city.xml";
+    private static final String VALIDATORNAME = System.getProperty("user.dir") + File.separator + "src"+File.separator+ "main"+File.separator+ "resources"+File.separator+ "XSDcity.xml";
 
 
 

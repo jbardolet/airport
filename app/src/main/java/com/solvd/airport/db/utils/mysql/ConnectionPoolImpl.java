@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ConnectionPoolImpl implements ConnectionPool {
     private static final Logger logger = LogManager.getLogger("ConnectionPoolImpl");
@@ -18,13 +20,13 @@ public class ConnectionPoolImpl implements ConnectionPool {
 
     private static int INITIAL_POOL_SIZE = 5;
     private static ConnectionPoolImpl instance;
-    private static Queue<Connection> connections;
+    private static BlockingQueue<Connection> connections;
+
 
     public static synchronized ConnectionPoolImpl getInstance() {
         if(instance == null){
             instance = new ConnectionPoolImpl();
-            size=0;
-            connections = new LinkedList<>();
+            connections = new LinkedBlockingQueue<>(INITIAL_POOL_SIZE);
         }
         return instance;
     }
@@ -38,39 +40,31 @@ public class ConnectionPoolImpl implements ConnectionPool {
 
 
     @Override
-    public Connection getConnection() throws SQLException, InterruptedException {
+    public synchronized Connection getConnection() throws SQLException, InterruptedException {
         long timestamp = System.currentTimeMillis();
-        boolean createNewConnection = false;
 
-        synchronized (this) {
-            while (connections.isEmpty()) {
-                if (size < INITIAL_POOL_SIZE) {
-                    size++;
-                  //  logger.info("ac size "+size);
-                    createNewConnection = true;
-                    break;
-                } else {
-                    this.wait(Math.max(timestamp - System.currentTimeMillis(), 1));
 
-                    if (timestamp <= System.currentTimeMillis()) {
-                        throw new SQLException("Connection not available");
-                    }
-                }
+        if(connections.size()==INITIAL_POOL_SIZE){
+            this.wait(Math.max(timestamp-System.currentTimeMillis(),1));
+            if(timestamp<= System.currentTimeMillis()){
+                throw new SQLException("Connection not avaiable");
             }
-
-            if (!createNewConnection) {
-                return connections.poll();
-            }
+        }else{
+            connections.put(createNewConnection());
+            logger.info(connections.size());
         }
-
-        return createNewConnection();
+        return connections.peek();
     }
 
 
-    public synchronized void releaseConnection(Connection connection) throws SQLException {
-        connections.offer(connection);
-        size--;
-       // logger.info("ac size "+size);
+    public synchronized void releaseConnection(Connection connection)  {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        logger.info(connections.size());
+
     }
 
 }
