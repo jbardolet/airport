@@ -1,13 +1,22 @@
 package com.solvd.airport.db.dao.model;
 
+import javax.xml.bind.annotation.*;
 import java.util.List;
 
+@XmlRootElement(name = "ticket")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Ticket {
+
     private Long id;
+    @XmlElement
     private Luggage luggage;
+    @XmlElement
     private Food food;
+    @XmlElement
     private Seat seat;
+    @XmlElement
     private Person person;
+    @XmlTransient
     private Trip trip;
 
     public Ticket(Long id, Luggage luggage, Food food, Seat seat, Person person, Trip trip) {

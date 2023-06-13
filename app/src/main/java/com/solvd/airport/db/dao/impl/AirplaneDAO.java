@@ -39,6 +39,8 @@ public class AirplaneDAO implements IDAO<Airplane> {
             preparedStatement.setLong(1,id);
             ResultSet resultSet = preparedStatement.executeQuery();
             airplane = fillAirplaneByResultSet(resultSet);
+            resultSet.close();
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+SELECT_BY_ID);
         } finally {
@@ -59,6 +61,8 @@ public class AirplaneDAO implements IDAO<Airplane> {
             while (resultSet.next()){
                 airplanes.add(fillAirplaneByResultSet(resultSet));
             }
+            resultSet.close();
+            preparedStatement.close();
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: " + SELECT_ALL);
         } finally {
@@ -81,6 +85,7 @@ public class AirplaneDAO implements IDAO<Airplane> {
             statement.setLong(4,airplane.getGate().getId());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -99,6 +104,7 @@ public class AirplaneDAO implements IDAO<Airplane> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {

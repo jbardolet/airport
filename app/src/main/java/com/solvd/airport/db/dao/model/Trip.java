@@ -1,23 +1,42 @@
 package com.solvd.airport.db.dao.model;
 
-import java.util.Date;
 
+import com.solvd.airport.parserXML.DateAdapter;
+
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Date;
+import java.util.List;
+@XmlRootElement(name = "trip")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Trip {
     private Long id;
+    @XmlElement(name = "airplane")
     private Airplane airplane;
+    @XmlElement(name = "cityFrom")
     private City cityFrom;
+    @XmlElement(name = "cityTo")
     private City cityTo;
+
+    @XmlJavaTypeAdapter(DateAdapter.class)
     private Date departureDate;
+
+
+    //@XmlElementWrapper(name="tickets")
+    @XmlElement(name = "tickets")
+   // private List<Ticket> tickets;
+    private Tickets tickets;
 
     public Trip() {
     }
 
-    public Trip(Long id, Airplane airplane, City cityFrom, City cityTo, Date departureDate) {
+    public Trip(Long id, Airplane airplane, City cityFrom, City cityTo, Date departureDate, Tickets tickets) {
         this.id = id;
         this.airplane = airplane;
         this.cityFrom = cityFrom;
         this.cityTo = cityTo;
         this.departureDate = departureDate;
+        this.tickets = tickets;
     }
 
     public Long getId() {
@@ -56,7 +75,16 @@ public class Trip {
         return departureDate;
     }
 
+
     public void setDepartureDate(Date departureDate) {
         this.departureDate = departureDate;
+    }
+
+    public Tickets getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(Tickets tickets) {
+        this.tickets = tickets;
     }
 }

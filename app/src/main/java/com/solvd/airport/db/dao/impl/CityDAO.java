@@ -60,6 +60,7 @@ public class CityDAO implements ICityDAO {
             statement.setString(4, city.getState());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -78,6 +79,8 @@ public class CityDAO implements ICityDAO {
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             city = fillCityByResultSet(resultSet);
+            resultSet.close();
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
@@ -100,6 +103,8 @@ public class CityDAO implements ICityDAO {
                 City city= fillCityByResultSet(resultSet);
                 cityList.add(city);
             }
+            resultSet.close();
+            preparedStatement.close();
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
@@ -119,6 +124,7 @@ public class CityDAO implements ICityDAO {
             preparedStatement.setInt(1, Math.toIntExact(id));
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {

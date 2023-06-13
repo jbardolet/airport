@@ -36,6 +36,7 @@ public class FoodDAO implements IDAO<Food> {
             statement.setString(3, food.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -56,7 +57,7 @@ public class FoodDAO implements IDAO<Food> {
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
             food = fillFoodByResultSet(resultSet);
-
+            resultSet.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
@@ -78,6 +79,8 @@ public class FoodDAO implements IDAO<Food> {
             while (resultSet.next()){
                 foods.add(fillFoodByResultSet(resultSet));
             }
+            resultSet.close();
+            statement.close();
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
@@ -97,6 +100,7 @@ public class FoodDAO implements IDAO<Food> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {

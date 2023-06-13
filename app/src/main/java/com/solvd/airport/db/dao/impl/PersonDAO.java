@@ -38,6 +38,7 @@ public class PersonDAO implements IPersonDAO {
             statement.setLong(9, person.getPilotLicense().getId());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error INSERT Person in BBDD");
         } finally {
@@ -59,6 +60,8 @@ public class PersonDAO implements IPersonDAO {
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             person = fillPersonByResultSet(resultSet);
+            preparedStatement.close();
+            resultSet.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+SELECT_BY_ID);
         } finally {
@@ -80,6 +83,8 @@ public class PersonDAO implements IPersonDAO {
                 Person person = fillPersonByResultSet(resultSet);
                 people.add(person);
             }
+            resultSet.close();
+            preparedStatement.close();
         }  catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error SELECT ALL from table PEOPLE");
         } finally {
@@ -101,6 +106,8 @@ public class PersonDAO implements IPersonDAO {
             preparedStatement.setInt(1, Math.toIntExact(id));
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error deleting person");
         }finally {

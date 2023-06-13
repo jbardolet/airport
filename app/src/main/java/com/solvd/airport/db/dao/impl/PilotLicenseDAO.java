@@ -33,6 +33,7 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
             statement.setString(2, pilotLicense.getLicenseCode());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -52,6 +53,8 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
             pilotLicense = fillRoleByResultSet(resultSet);
+            statement.close();
+            resultSet.close();
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
@@ -75,6 +78,8 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
                 PilotLicense pilotLicense = fillRoleByResultSet(resultSet);
                 pilotLicenses.add(pilotLicense);
             }
+            statement.close();
+            resultSet.close();
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
@@ -94,6 +99,7 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {

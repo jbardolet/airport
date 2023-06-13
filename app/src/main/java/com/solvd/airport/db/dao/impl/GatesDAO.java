@@ -34,6 +34,7 @@ public class GatesDAO implements IDAO<Gate> {
             statement.setInt(2, gate.getNumber());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -59,7 +60,8 @@ public class GatesDAO implements IDAO<Gate> {
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
             gate = fillGateByResultSet(resultSet);
-
+            resultSet.close();
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
@@ -81,6 +83,8 @@ public class GatesDAO implements IDAO<Gate> {
             while (resultSet.next()){
                 gates.add(fillGateByResultSet(resultSet));
             }
+            statement.close();
+            resultSet.close();
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
@@ -105,6 +109,7 @@ public class GatesDAO implements IDAO<Gate> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {

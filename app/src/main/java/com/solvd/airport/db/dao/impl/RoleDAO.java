@@ -33,6 +33,7 @@ public class RoleDAO implements IRoleDAO {
             statement.setString(3, role.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -55,6 +56,8 @@ public class RoleDAO implements IRoleDAO {
             ResultSet resultSet = statement.executeQuery();
             role = fillRoleByResultSet(resultSet);
 
+            resultSet.close();
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
@@ -77,6 +80,8 @@ public class RoleDAO implements IRoleDAO {
                 Role role = fillRoleByResultSet(resultSet);
                 roles.add(role);
             }
+            resultSet.close();
+            statement.close();
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
@@ -96,6 +101,7 @@ public class RoleDAO implements IRoleDAO {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {

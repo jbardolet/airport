@@ -1,10 +1,21 @@
 package com.solvd.airport.db.dao.model;
 
+import com.sun.xml.txw2.annotation.XmlElement;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.List;
 
+@XmlRootElement(name = "airline")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Airline {
     private Long id;
     private String name;
+
+
+    @XmlTransient
     private List<Airplane> airplaneList;
 
     public Airline() {
@@ -39,4 +50,5 @@ public class Airline {
     public void setAirplaneList(List<Airplane> airplaneList) {
         this.airplaneList = airplaneList;
     }
+
 }

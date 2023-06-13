@@ -1,16 +1,26 @@
 package com.solvd.airport.db.dao.model;
 
-import java.util.Date;
+import com.solvd.airport.parserXML.DateAdapter;
 
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Date;
+@XmlRootElement(name = "person")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Person {
     private Long id;
     private String name;
     private String lastName;
+    @XmlJavaTypeAdapter(DateAdapter.class)
     private Date dataBirth;
     private Long workerId;
+    @XmlJavaTypeAdapter(DateAdapter.class)
     private Date startDate;
+    @XmlElement(name = "city")
     private City city;
+    @XmlElement(name = "pilotLicense")
     private PilotLicense pilotLicense;
+    @XmlTransient
     private Role role;
 
     public Person() {

@@ -36,6 +36,7 @@ public class LuggageDAO implements IDAO<Luggage> {
             statement.setString(3, luggage.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -55,6 +56,8 @@ public class LuggageDAO implements IDAO<Luggage> {
             statement.executeUpdate();
             ResultSet resultSet = statement.executeQuery();
             luggage = fillLuggageByResultSet(resultSet);
+            resultSet.close();
+            statement.close();
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
@@ -78,6 +81,8 @@ public class LuggageDAO implements IDAO<Luggage> {
                 luggageList.add(fillLuggageByResultSet(resultSet));
             }
 
+            resultSet.close();
+            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
@@ -96,6 +101,7 @@ public class LuggageDAO implements IDAO<Luggage> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
+            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
