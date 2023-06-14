@@ -1,0 +1,56 @@
+[{"id":1,
+ "luggage":
+        {"id":1,
+         "price":10,
+         "description": "30Kg"
+        },
+  "food":
+        {"id": 1,
+          "name": "vegeterian",
+          "description": "vegeterian food"
+        },
+  "seat":
+        {"id": 1,
+         "seatNumber": 28,
+         "seatLetter": "B",
+         "price": 200.40
+        },
+  "person":
+        {"id": 1,
+         "name": "Alan",
+         "lastName": "Nala",
+         "dataBirth": "2023-06-06",
+         "city":
+                {"id": 1,
+                  "name": "Terrassa",
+                  "state": "CAT",
+                  "country": "ES"
+                }
+        }
+},
+{"id":2,
+ "luggage":
+       {"id":2,
+        "price":20,
+        "description": "50Kg"
+       },
+  "seat":
+        {"id": 2,
+         "seatNumber": 30,
+         "seatLetter": "C",
+         "price": 190.80
+        },
+  "person":
+         {"id": 2,
+          "name": "Joe",
+          "lastName": "Eoj",
+          "dataBirth": "2023-08-08",
+           "city":
+                 {"id": 1,
+                  "name": "Terrassa",
+                  "state": "CAT",
+                  "country": "ES"
+           }
+          }
+}
+]

@@ -38,6 +38,11 @@ public class AirlineDAO implements IDAO<Airline> {
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -45,20 +50,26 @@ public class AirlineDAO implements IDAO<Airline> {
     @Override
     public Airline getById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement statement;
+        PreparedStatement statement = null;
         Airline airline;
+        ResultSet resultSet = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             airline = fillAirlineByResultSet(resultSet);
-            statement.close();
-            resultSet.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return airline;
@@ -68,19 +79,26 @@ public class AirlineDAO implements IDAO<Airline> {
     public List<Airline> getAll() throws DataConectionExeption {
         List<Airline> airlines = new ArrayList<>();
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 airlines.add(fillAirlineByResultSet(resultSet));
             }
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return airlines;
@@ -89,17 +107,22 @@ public class AirlineDAO implements IDAO<Airline> {
     @Override
     public void deleteById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(DELETE);
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
