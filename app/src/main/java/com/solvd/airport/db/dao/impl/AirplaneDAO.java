@@ -1,6 +1,7 @@
 package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
+import com.solvd.airport.db.dao.IAirplaneDAO;
 import com.solvd.airport.db.dao.IDAO;
 import com.solvd.airport.db.dao.model.Airline;
 import com.solvd.airport.db.dao.model.Airplane;
@@ -16,7 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirplaneDAO implements IDAO<Airplane> {
+public class AirplaneDAO implements IAirplaneDAO {
 
     private static final Logger logger = LogManager.getLogger("AirplaneDAO");
     private static final String SELECT_ALL = "SELECT * FROM airplanes";
@@ -24,7 +25,7 @@ public class AirplaneDAO implements IDAO<Airplane> {
     private static final String INSERT = "INSERT INTO airplanes (id, name, id_airlines, Gates_id) VALUES (?,?,?,?)";
     private static final String DELETE = "SELECT * FROM airlines";
 
-    private AirplaneUtilsImpl airplaneUtils = new AirplaneUtilsImpl();
+   // private AirplaneUtilsImpl airplaneUtils = new AirplaneUtilsImpl();
 
 
 
@@ -33,21 +34,83 @@ public class AirplaneDAO implements IDAO<Airplane> {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         Airplane airplane = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_BY_ID);
             preparedStatement.setLong(1,id);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             airplane = fillAirplaneByResultSet(resultSet);
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+SELECT_BY_ID);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return airplane;
 
+    }
+    @Override
+    public Airplane getAriplaneBySeatId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        Airplane airplane = null;
+        ResultSet resultSet =null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM Airplanes WHERE id=(SELECT id_Airplane FORM Seats WHERE id=?)");
+            preparedStatement.setLong(1,id);
+            resultSet = preparedStatement.executeQuery();
+            airplane = fillAirplaneByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e) {
+            throw new DataConectionExeption("Error query: SELECT * FROM Airplanes WHERE id=(SELECT id_Airplane FORM Seats WHERE id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return airplane;
+    }
+
+    @Override
+    public Airplane getAriplaneByTripId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        Airplane airplane = null;
+        ResultSet resultSet =null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM Airplanes WHERE id=(SELECT id_Airplane FORM Trips WHERE id=?)");
+            preparedStatement.setLong(1,id);
+            resultSet = preparedStatement.executeQuery();
+            airplane = fillAirplaneByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e) {
+            throw new DataConectionExeption("Error query: SELECT * FROM Airplanes WHERE id=(SELECT id_Airplane FORM Trips WHERE id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return airplane;
     }
 
     public List<Airplane> getAll() throws DataConectionExeption {
@@ -112,17 +175,21 @@ public class AirplaneDAO implements IDAO<Airplane> {
         }
     }
 
+
+
     private Airplane fillAirplaneByResultSet(ResultSet resultSet) throws DataConectionExeption {
         Airplane airplane= null;
         try {
             airplane= new Airplane();
             airplane.setId(resultSet.getLong(1));
             airplane.setName(resultSet.getString(2));
-            airplane.setAirline(airplaneUtils.getAirlineById(resultSet.getLong(3)));
-            airplane.setGate(airplaneUtils.getGateById(resultSet.getLong(4)));
+           // airplane.setAirline(airplaneUtils.getAirlineById(resultSet.getLong(3)));
+           // airplane.setGate(airplaneUtils.getGateById(resultSet.getLong(4)));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return airplane;
     }
+
+
 }

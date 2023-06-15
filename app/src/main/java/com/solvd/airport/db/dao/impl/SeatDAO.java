@@ -43,10 +43,15 @@ public class SeatDAO implements ISeatDAO {
             statement.setFloat(5,seat.getPrice());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -56,17 +61,24 @@ public class SeatDAO implements ISeatDAO {
         Connection connection = null;
         PreparedStatement statement = null;
         Seat seat = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             seat = fillSeatByResultSet(resultSet);
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return seat;
@@ -77,18 +89,25 @@ public class SeatDAO implements ISeatDAO {
         List<Seat> seats = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet= null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 seats.add(fillSeatByResultSet(resultSet));
             }
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: " + SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -106,10 +125,15 @@ public class SeatDAO implements ISeatDAO {
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
 
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -118,19 +142,26 @@ public class SeatDAO implements ISeatDAO {
         List<Seat> seats = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_BY_PLANEID);
             preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 seats.add(fillSeatByResultSet(resultSet));
             }
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: " + SELECT_BY_PLANEID);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -143,7 +174,7 @@ public class SeatDAO implements ISeatDAO {
             seat.setId(resultSet.getLong(1));
             seat.setSeatNumber(resultSet.getInt(2));
             seat.setSeatLetter(resultSet.getString(3));
-            seat.setAirplane(seatUtils.getAirplaneById(resultSet.getLong(4)));
+           // seat.setAirplane(seatUtils.getAirplaneById(resultSet.getLong(4)));
             seat.setPrice(resultSet.getFloat(5));
         } catch (SQLException e) {
             throw new DataConectionExeption("Error filling role object");

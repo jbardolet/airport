@@ -36,10 +36,15 @@ public class FoodDAO implements IDAO<Food> {
             statement.setString(3, food.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -50,17 +55,24 @@ public class FoodDAO implements IDAO<Food> {
         Connection connection = null;
         PreparedStatement statement = null;
         Food food = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             food = fillFoodByResultSet(resultSet);
-            resultSet.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return food;
@@ -71,20 +83,27 @@ public class FoodDAO implements IDAO<Food> {
         List<Food> foods = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_ALL);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             while (resultSet.next()){
                 foods.add(fillFoodByResultSet(resultSet));
             }
-            resultSet.close();
-            statement.close();
+
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return foods;
@@ -100,10 +119,15 @@ public class FoodDAO implements IDAO<Food> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }

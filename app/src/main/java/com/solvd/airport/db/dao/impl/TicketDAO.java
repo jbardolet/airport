@@ -2,9 +2,7 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
-import com.solvd.airport.db.dao.model.Seat;
 import com.solvd.airport.db.dao.model.Ticket;
-import com.solvd.airport.db.service.impl.TicketsUtilsImpl;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +22,6 @@ public class TicketDAO implements IDAO<Ticket> {
 
     private static final String SELECT_ALL = "SELECT * FROM Tickets";
     private static final String DELETE = "DELETE FROM Tickets WHERE id = ?";
-    private TicketsUtilsImpl ticketsUtils = new TicketsUtilsImpl();
 
     @Override
     public void insert(Ticket ticket) throws DataConectionExeption {
@@ -41,10 +38,15 @@ public class TicketDAO implements IDAO<Ticket> {
             statement.setLong(6,ticket.getFood().getId());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -54,17 +56,25 @@ public class TicketDAO implements IDAO<Ticket> {
         Connection connection = null;
         PreparedStatement statement = null;
         Ticket ticket = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             ticket = fillTicketByResultSet(resultSet);
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return ticket;
@@ -75,18 +85,23 @@ public class TicketDAO implements IDAO<Ticket> {
         List<Ticket> tickets = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 tickets.add(fillTicketByResultSet(resultSet));
             }
-            resultSet.close();
-            preparedStatement.close();
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: " + SELECT_ALL);
         } finally {
+            try {
+                preparedStatement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -103,10 +118,15 @@ public class TicketDAO implements IDAO<Ticket> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -115,11 +135,7 @@ public class TicketDAO implements IDAO<Ticket> {
         try {
             ticket= new Ticket();
             ticket.setId(resultSet.getLong(1));
-            ticket.setPerson(ticketsUtils.selectPersonById(resultSet.getLong(2)));
-            ticket.setTrip(ticketsUtils.selectTripById(resultSet.getLong(3)));
-            ticket.setLuggage(ticketsUtils.selectLuggageById(resultSet.getLong(4)));
-            ticket.setSeat(ticketsUtils.selectSeatById(resultSet.getLong(5)));
-            ticket.setFood(ticketsUtils.selectFoodById(resultSet.getLong(6)));
+
         } catch (SQLException e) {
             throw new DataConectionExeption("Error filling role object");
         }

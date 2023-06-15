@@ -37,10 +37,15 @@ public class CrewServiceDAO implements IDAO<CrewService> {
             statement.setLong(3, crewService.getTrip().getId());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -50,17 +55,24 @@ public class CrewServiceDAO implements IDAO<CrewService> {
         Connection connection = null;
         PreparedStatement statement = null;
         CrewService crewService = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             crewService = fillCSByResultSet(resultSet);
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return crewService;
@@ -71,18 +83,24 @@ public class CrewServiceDAO implements IDAO<CrewService> {
         List<CrewService> crewServices = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 crewServices.add(fillCSByResultSet(resultSet));
             }
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: " + SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -99,11 +117,14 @@ public class CrewServiceDAO implements IDAO<CrewService> {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-
-            preparedStatement.close();
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -113,8 +134,8 @@ public class CrewServiceDAO implements IDAO<CrewService> {
         try {
             crewService= new CrewService();
             crewService.setId(resultSet.getLong(1));
-            crewService.setPerson(crewServiceUtils.getPersonById(resultSet.getLong(2)));
-            crewService.setTrip(crewServiceUtils.getTripById(resultSet.getLong(3)));
+           // crewService.setPerson(crewServiceUtils.getPersonById(resultSet.getLong(2)));
+           // crewService.setTrip(crewServiceUtils.getTripById(resultSet.getLong(3)));
         } catch (SQLException e) {
             throw new DataConectionExeption("Error filling role object");
         }

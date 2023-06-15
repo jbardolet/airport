@@ -2,6 +2,7 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
+import com.solvd.airport.db.dao.IPilotLicenseDAO;
 import com.solvd.airport.db.dao.model.PilotLicense;
 import com.solvd.airport.db.dao.model.Role;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
@@ -15,7 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PilotLicenseDAO implements IDAO<PilotLicense> {
+public class PilotLicenseDAO implements IPilotLicenseDAO {
     private static final Logger logger = LogManager.getLogger("PilotLicenseDAO");
 
     private static final String INSERT = "INSERT INTO Pilot_license (id, pilot_license) VALUES (?,?)";
@@ -33,10 +34,15 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
             statement.setString(2, pilotLicense.getLicenseCode());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -44,46 +50,86 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
     @Override
     public PilotLicense getById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement statement;
+        PreparedStatement statement=null;
         PilotLicense pilotLicense ;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             pilotLicense = fillRoleByResultSet(resultSet);
-            statement.close();
-            resultSet.close();
+
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return pilotLicense;
     }
+    @Override
+    public PilotLicense getLicenseByPersonId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement statement=null;
+        PilotLicense pilotLicense ;
+        ResultSet resultSet=null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            statement = connection.prepareStatement("SELECT * FROM Pilot_license WHERE ID = (SELECT Pilot_license_id FROM People WHERE id = ?)");
+            statement.setLong(1, id);
+            statement.executeUpdate();
+            resultSet = statement.executeQuery();
+            pilotLicense = fillRoleByResultSet(resultSet);
 
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: SELECT * FROM Pilot_license WHERE ID = (SELECT Pilot_license_id FROM People WHERE id = ?)");
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return pilotLicense;
+    }
     @Override
     public List<PilotLicense> getAll() throws DataConectionExeption {
         List<PilotLicense> pilotLicenses = new ArrayList<>();
         Connection connection = null;
-        PreparedStatement statement;
+        PreparedStatement statement=null;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_ALL);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             while (resultSet.next()){
                 PilotLicense pilotLicense = fillRoleByResultSet(resultSet);
                 pilotLicenses.add(pilotLicense);
             }
-            statement.close();
-            resultSet.close();
+
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return pilotLicenses;
@@ -92,17 +138,22 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
     @Override
     public void deleteById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement preparedStatement;
+        PreparedStatement preparedStatement=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(DELETE);
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -120,4 +171,6 @@ public class PilotLicenseDAO implements IDAO<PilotLicense> {
 
         return pilotLicense;
     }
+
+
 }

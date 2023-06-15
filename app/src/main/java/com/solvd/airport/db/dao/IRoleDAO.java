@@ -4,4 +4,6 @@ import com.solvd.airport.db.dao.model.Role;
 
 public interface IRoleDAO extends IDAO<Role> {
 
+    Role getRoleByPersonId(Long id) throws DataConectionExeption;
+
 }

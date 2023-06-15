@@ -1,9 +1,8 @@
 package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
-import com.solvd.airport.db.dao.IDAO;
+import com.solvd.airport.db.dao.IGateDAO;
 import com.solvd.airport.db.dao.model.Gate;
-import com.solvd.airport.db.dao.model.Role;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GatesDAO implements IDAO<Gate> {
+public class GatesDAO implements IGateDAO {
 
     private static final Logger logger = LogManager.getLogger("GatesDAO");
     private static final String INSERT = "INSERT INTO gates (id, number) VALUES (?,?)";
@@ -34,7 +33,6 @@ public class GatesDAO implements IDAO<Gate> {
             statement.setInt(2, gate.getNumber());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
@@ -51,46 +49,79 @@ public class GatesDAO implements IDAO<Gate> {
     @Override
     public Gate getById(Long id) throws DataConectionExeption {
         Connection connection = null;
-        PreparedStatement statement;
+        PreparedStatement statement=null;
         Gate gate = null;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             gate = fillGateByResultSet(resultSet);
-            resultSet.close();
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing PreparedStatement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return gate;
     }
 
     @Override
+    public Gate getGatByAirplaneId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement statement=null;
+        Gate gate = null;
+        ResultSet resultSet =null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            statement = connection.prepareStatement("SELECT * FROM gates WHERE id = (SELECT gate_id FROM Airplane where id=?)");
+            statement.setLong(1, id);
+            statement.executeUpdate();
+            resultSet = statement.executeQuery();
+            gate = fillGateByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: SELECT * FROM gates WHERE id = (SELECT gate_id FROM Airplane where id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing PreparedStatement");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return gate;
+    }
+    @Override
     public List<Gate> getAll() throws DataConectionExeption {
         List<Gate> gates = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_ALL);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             while (resultSet.next()){
                 gates.add(fillGateByResultSet(resultSet));
             }
-            statement.close();
-            resultSet.close();
-
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
             try {
                 statement.close();
+                resultSet.close();
             } catch (SQLException e) {
                 throw new DataConectionExeption("Error closing PreparedStatement");
             }
@@ -122,6 +153,7 @@ public class GatesDAO implements IDAO<Gate> {
         }
     }
 
+
     private Gate fillGateByResultSet(ResultSet resultSet) throws DataConectionExeption {
         Gate gate= null;
         try {
@@ -134,4 +166,6 @@ public class GatesDAO implements IDAO<Gate> {
 
         return gate;
     }
+
+
 }

@@ -38,10 +38,15 @@ public class PersonDAO implements IPersonDAO {
             statement.setLong(9, person.getPilotLicense().getId());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error INSERT Person in BBDD");
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -54,20 +59,53 @@ public class PersonDAO implements IPersonDAO {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         Person person;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_BY_ID);
             preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             person = fillPersonByResultSet(resultSet);
-            preparedStatement.close();
-            resultSet.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+SELECT_BY_ID);
         } finally {
+            try {
+                preparedStatement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
        return person;
+    }
+
+    @Override
+    public Person getPersonByCrewServiceId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        Person person;
+        ResultSet resultSet=null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM People where id = (SELECT People_id FROM CrewService WHERE id=?");
+            preparedStatement.setLong(1, id);
+            resultSet = preparedStatement.executeQuery();
+            person = fillPersonByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e) {
+            throw new DataConectionExeption("Error query: SELECT * FROM People where id = (SELECT People_id FROM CrewService WHERE id=?");
+        } finally {
+            try {
+                preparedStatement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return person;
     }
 
     @Override
@@ -75,19 +113,25 @@ public class PersonDAO implements IPersonDAO {
         List<Person> people = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 Person person = fillPersonByResultSet(resultSet);
                 people.add(person);
             }
-            resultSet.close();
-            preparedStatement.close();
+
         }  catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error SELECT ALL from table PEOPLE");
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
            ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -106,16 +150,22 @@ public class PersonDAO implements IPersonDAO {
             preparedStatement.setInt(1, Math.toIntExact(id));
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
 
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error deleting person");
         }finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
 
     }
+
 
     @Override
     public void deletePersonByObject(Person p) throws DataConectionExeption {
@@ -129,11 +179,11 @@ public class PersonDAO implements IPersonDAO {
             person.setName(resultSet.getString(2));
             person.setLastName(resultSet.getString(3));
             person.setDataBirth(resultSet.getDate(4));
-            person.setCity(personUtiles.getCityById(resultSet.getLong(5)));
+           // person.setCity(personUtiles.getCityById(resultSet.getLong(5)));
             person.setWorkerId(resultSet.getLong(6));
             person.setStartDate(resultSet.getDate(7));
-            person.setRole(personUtiles.getRoleById(resultSet.getLong(8)));
-            person.setPilotLicense(personUtiles.getLicenseById(resultSet.getLong(9)));
+           // person.setRole(personUtiles.getRoleById(resultSet.getLong(8)));
+            //person.setPilotLicense(personUtiles.getLicenseById(resultSet.getLong(9)));
         } catch (SQLException e) {
             throw new DataConectionExeption("Error filling person from resutlset");
         }

@@ -2,6 +2,7 @@ package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.IDAO;
+import com.solvd.airport.db.dao.ITripDAO;
 import com.solvd.airport.db.dao.model.Seat;
 import com.solvd.airport.db.dao.model.Trip;
 import com.solvd.airport.db.service.impl.TripUtilsImpl;
@@ -13,7 +14,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TripDAO implements IDAO<Trip> {
+public class TripDAO implements ITripDAO {
     private static final Logger logger = LogManager.getLogger("TripDAO");
     private static final String INSERT = "INSERT INTO Trips (id, id_Airplane, id_from, id_to, time_departure) VALUES (?,?, ?,?,?)";
     private static final String SELECT_BY_ID = "SELECT * FROM Trips WHERE id = ?";
@@ -35,10 +36,15 @@ public class TripDAO implements IDAO<Trip> {
             statement.setDate(5, (Date) trip.getDepartureDate());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -47,18 +53,53 @@ public class TripDAO implements IDAO<Trip> {
     public Trip getById(Long id) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet = null;
         Trip trip = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             trip = fillTripByResultSet(resultSet);
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return trip;
+    }
+
+    @Override
+    public Trip getTripByCrewServiceId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        Trip trip = null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            statement = connection.prepareStatement("SELECT * FROM Trips WHERE id = (SELECT Trips_id FROM CrewServices WHERE id=?)");
+            statement.setLong(1, id);
+            statement.executeUpdate();
+            resultSet = statement.executeQuery();
+            trip = fillTripByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: SELECT * FROM Trips WHERE id = (SELECT Trips_id FROM CrewServices WHERE id=?)");
+        } finally {
+            try {
+                statement.close();
+                resultSet.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return trip;
@@ -69,18 +110,25 @@ public class TripDAO implements IDAO<Trip> {
         List<Trip> trips = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 trips.add(fillTripByResultSet(resultSet));
             }
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: " + SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -98,10 +146,15 @@ public class TripDAO implements IDAO<Trip> {
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
 
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -111,9 +164,9 @@ public class TripDAO implements IDAO<Trip> {
         try {
             trip= new Trip();
             trip.setId(resultSet.getLong(1));
-            trip.setAirplane(tripUtils.getAirplaneById(resultSet.getLong(2)));
-            trip.setCityFrom(tripUtils.getCityById(resultSet.getLong(3)));
-            trip.setCityTo(tripUtils.getCityById(resultSet.getLong(4)));
+           // trip.setAirplane(tripUtils.getAirplaneById(resultSet.getLong(2)));
+           // trip.setCityFrom(tripUtils.getCityById(resultSet.getLong(3)));
+           // trip.setCityTo(tripUtils.getCityById(resultSet.getLong(4)));
             trip.setDepartureDate(resultSet.getDate(5));
         } catch (SQLException e) {
             throw new DataConectionExeption("Error filling role object");
@@ -121,4 +174,6 @@ public class TripDAO implements IDAO<Trip> {
 
         return trip;
     }
+
+
 }

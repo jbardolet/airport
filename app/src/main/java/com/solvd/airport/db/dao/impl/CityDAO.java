@@ -3,6 +3,7 @@ package com.solvd.airport.db.dao.impl;
 import com.solvd.airport.db.dao.DataConectionExeption;
 import com.solvd.airport.db.dao.ICityDAO;
 import com.solvd.airport.db.dao.model.City;
+import com.solvd.airport.db.dao.model.Role;
 import com.solvd.airport.db.utils.mysql.ConnectionPoolImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,11 +29,12 @@ public class CityDAO implements ICityDAO {
         List<City> cityList = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet= null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_BY_STATE);
             preparedStatement.setString(1, state);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 City city= fillCityByResultSet(resultSet);
                 cityList.add(city);
@@ -40,12 +42,19 @@ public class CityDAO implements ICityDAO {
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_STATE);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
         return cityList;
 
     }
+
 
     @Override
     public void insert(City city) throws DataConectionExeption  {
@@ -60,10 +69,15 @@ public class CityDAO implements ICityDAO {
             statement.setString(4, city.getState());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -72,18 +86,108 @@ public class CityDAO implements ICityDAO {
     public City getById(Long id) throws DataConectionExeption {
         Connection connection = null;
         PreparedStatement preparedStatement=null;
+        ResultSet resultSet=null;
         City city = null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_BY_ID);
             preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             city = fillCityByResultSet(resultSet);
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+
+        return city;
+    }
+
+    @Override
+    public City getCityByPersonId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement preparedStatement=null;
+        ResultSet resultSet=null;
+        City city = null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM Cities WHERE id = (SELECT id_city FROM People WHERE id=?)");
+            preparedStatement.setLong(1, id);
+            resultSet = preparedStatement.executeQuery();
+            city = fillCityByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e) {
+            throw new DataConectionExeption("Error query: SELECT * FROM Cities WHERE id = (SELECT id_city FROM People WHERE id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+
+        return city;
+    }
+
+    @Override
+    public City getCityFromByTripId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement preparedStatement=null;
+        ResultSet resultSet=null;
+        City city = null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM Cities WHERE id = (SELECT id_from FROM Trips WHERE id=?)");
+            preparedStatement.setLong(1, id);
+            resultSet = preparedStatement.executeQuery();
+            city = fillCityByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e) {
+            throw new DataConectionExeption("Error query: SELECT * FROM Cities WHERE id = (SELECT id_from FROM Trips WHERE id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+
+        return city;
+    }
+
+    @Override
+    public City getCityToByTripId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement preparedStatement=null;
+        ResultSet resultSet=null;
+        City city = null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM Cities WHERE id = (SELECT id_to FROM Trips WHERE id=?)");
+            preparedStatement.setLong(1, id);
+            resultSet = preparedStatement.executeQuery();
+            city = fillCityByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e) {
+            throw new DataConectionExeption("Error query: SELECT * FROM Cities WHERE id = (SELECT id_to FROM Trips WHERE id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -95,19 +199,26 @@ public class CityDAO implements ICityDAO {
         List<City> cityList = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
                 City city= fillCityByResultSet(resultSet);
                 cityList.add(city);
             }
-            resultSet.close();
-            preparedStatement.close();
+
         } catch (SQLException |InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -124,10 +235,15 @@ public class CityDAO implements ICityDAO {
             preparedStatement.setInt(1, Math.toIntExact(id));
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 

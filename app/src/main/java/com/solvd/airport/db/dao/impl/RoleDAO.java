@@ -33,10 +33,15 @@ public class RoleDAO implements IRoleDAO {
             statement.setString(3, role.getDescription());
             statement.executeUpdate();
             logger.info("Record created");
-            statement.close();
+
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ INSERT);
         } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
 
@@ -48,19 +53,52 @@ public class RoleDAO implements IRoleDAO {
         Connection connection = null;
         PreparedStatement statement = null;
         Role role = null;
+        ResultSet resultSet=null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_BY_ID);
             statement.setLong(1, id);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             role = fillRoleByResultSet(resultSet);
 
-            resultSet.close();
-            statement.close();
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_BY_ID);
         } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return role;
+    }
+
+    @Override
+    public Role getRoleByPersonId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        Role role = null;
+        ResultSet resultSet=null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            statement = connection.prepareStatement("SELECT * FROM Roles WHERE id=(SELECT Roles_id FROM People WHERE ID = ?)");
+            statement.setLong(1, id);
+            statement.executeUpdate();
+            resultSet = statement.executeQuery();
+            role = fillRoleByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: SELECT * FROM Roles WHERE id=(SELECT Roles_id FROM People WHERE ID = ?)");
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return role;
@@ -71,21 +109,28 @@ public class RoleDAO implements IRoleDAO {
         List<Role> roles = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
+        ResultSet resultSet =null;
         try {
             connection = ConnectionPoolImpl.getInstance().getConnection();
             statement = connection.prepareStatement(SELECT_ALL);
             statement.executeUpdate();
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             while (resultSet.next()){
                 Role role = fillRoleByResultSet(resultSet);
                 roles.add(role);
             }
-            resultSet.close();
-            statement.close();
+
 
         } catch (SQLException | InterruptedException e)  {
             throw new DataConectionExeption("Error query: "+ SELECT_ALL);
         } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
+
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
         return roles;
@@ -101,10 +146,15 @@ public class RoleDAO implements IRoleDAO {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
             logger.info("Record deleted");
-            preparedStatement.close();
+
         } catch (SQLException | InterruptedException e) {
             throw new DataConectionExeption("Error query: "+ DELETE);
         } finally {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statements");
+            }
             ConnectionPoolImpl.getInstance().releaseConnection(connection);
         }
     }
@@ -122,6 +172,7 @@ public class RoleDAO implements IRoleDAO {
 
         return role;
     }
+
 
 
 }

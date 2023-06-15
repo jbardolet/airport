@@ -1,6 +1,7 @@
 package com.solvd.airport.db.dao.impl;
 
 import com.solvd.airport.db.dao.DataConectionExeption;
+import com.solvd.airport.db.dao.IAirlineDAO;
 import com.solvd.airport.db.dao.IDAO;
 import com.solvd.airport.db.dao.model.Airline;
 import com.solvd.airport.db.dao.model.Role;
@@ -15,7 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AirlineDAO implements IDAO<Airline> {
+public class AirlineDAO implements IAirlineDAO {
     private static final Logger logger = LogManager.getLogger("AirlineDAO");
     private static final String SELECT_ALL = "SELECT * FROM airlines";
     private static final String INSERT = "INSERT INTO airlines (id, name) VALUES (?,?)";
@@ -75,6 +76,33 @@ public class AirlineDAO implements IDAO<Airline> {
         return airline;
     }
 
+    @Override
+    public Airline getAirlineByAirplaneId(Long id) throws DataConectionExeption {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        Airline airline;
+        ResultSet resultSet = null;
+        try {
+            connection = ConnectionPoolImpl.getInstance().getConnection();
+            statement = connection.prepareStatement("SELECT * FROM airlines WHERE id = (SELECT id_airline FROM Airplane where id=?)");
+            statement.setLong(1, id);
+            statement.executeUpdate();
+            resultSet = statement.executeQuery();
+            airline = fillAirlineByResultSet(resultSet);
+
+        } catch (SQLException | InterruptedException e)  {
+            throw new DataConectionExeption("Error query: SELECT * FROM airlines WHERE id = (SELECT id_airline FROM Airplane where id=?)");
+        } finally {
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                throw new DataConectionExeption("Error closing statement");
+            }
+            ConnectionPoolImpl.getInstance().releaseConnection(connection);
+        }
+        return airline;
+    }
     @Override
     public List<Airline> getAll() throws DataConectionExeption {
         List<Airline> airlines = new ArrayList<>();
@@ -138,5 +166,6 @@ public class AirlineDAO implements IDAO<Airline> {
         }
         return airline;
     }
+
 
 }
